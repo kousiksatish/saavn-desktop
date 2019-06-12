@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, globalShortcut } = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -11,7 +11,7 @@ function createWindow () {
     height: 600,
     minWidth: 200,
     webPreferences: {
-      nodeIntegration: true
+        sandbox: true
     }
   })
 
@@ -30,6 +30,29 @@ function createWindow () {
     // when you should delete the corresponding element.
     win = null
   })
+ 
+  globalShortcut.register('MediaPlayPause', () => {
+      playPause();
+  })
+}
+var shortcutInvokedFirstTime = true;
+function playPause() {
+    // Initialise buttons only during the first time
+    if (shortcutInvokedFirstTime) {
+        win.webContents.executeJavaScript(`
+            let playButton = document.getElementById('play');
+            let pauseButton = document.getElementById('pause');
+        `)
+        shortcutInvokedFirstTime = false;
+    }
+    // Function to play if paused and pause if playing
+    win.webContents.executeJavaScript(`
+        if (!playButton.classList.contains('hide')) {
+        playButton.click();
+        } else if (!pauseButton.classList.contains('hide')) {
+            pauseButton.click();
+        }
+    `);
 }
 
 // This method will be called when Electron has finished
